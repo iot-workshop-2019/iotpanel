@@ -9,6 +9,7 @@ import (
 
 	"github.com/asterix24/radiolog-mqtt/api"
 	"github.com/asterix24/radiolog-mqtt/cloud"
+	"github.com/asterix24/radiolog-mqtt/evcal"
 	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
 )
@@ -112,6 +113,10 @@ func main() {
 
 	cloud_srv := &server.Server{Db: db_ptr}
 	cloud_srv.Init()
+
+	evcal := &evcal.EvCal{}
+	evcal.Init()
+	evcal.Events()
 
 	schedule(func() { fmt.Println("# alive") }, 10*time.Second)
 	schedule(cloud_srv.Publish, 5*time.Second)
