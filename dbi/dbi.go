@@ -1,11 +1,12 @@
 package dbi
 
 import (
-	"database/sql"
 	"fmt"
 	"os"
+	"time"
 
-	_ "github.com/lib/pq" // Load postgress driver
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -49,7 +50,36 @@ func dbConfig() map[string]string {
 
 // DBI  database interface
 type DBI struct {
-	db *sql.DB
+	db *gorm.DB
+}
+
+// Radiologdata DB model structure
+type Radiologdata struct {
+	gorm.Model
+	Label        string
+	Description  string
+	Address      uint
+	Timestamp    time.Time
+	Lqi          int
+	Rssi         int
+	Uptime       int
+	Tempcpu      int
+	Vrefcpu      int
+	Ntc0         int
+	Ntc1         int
+	Photores     int
+	Pressure     int
+	Temppressure int
+}
+
+// Temperature of gived address
+func (dbp *DBI) Temperature(address uint) {
+	var d []Radiologdata
+	dbp.db.Where(&Radiologdata{Address: address}).Find(&d)
+
+	for i := 0; i < 10; i++ {
+		log.Info(d[i].Ntc0)
+	}
 }
 
 // Init init db module interface
@@ -61,18 +91,16 @@ func (dbp *DBI) Init() error {
 		config[dbuser], config[dbpass], config[dbname])
 
 	var err error
-	dbp.db, err = sql.Open("postgres", psqlInfo)
+	dbp.db, err = gorm.Open("postgres", psqlInfo)
 	if err != nil {
 		log.Error("Unable to connect to DB: ", err)
 		return err
 	}
 
 	defer dbp.db.Close()
-	err = dbp.db.Ping()
-	if err != nil {
-		log.Error("Unable to talk with DB: ", err)
-		return err
-	}
 	log.Info("Successfully connected!")
+
+	// Migrate the schema
+	dbp.db.AutoMigrate(&Radiologdata{})
 	return nil
 }

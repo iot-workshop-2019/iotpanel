@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -26,6 +27,7 @@ type Api struct {
 // Index ...
 func (api *Api) Index(w http.ResponseWriter, r *http.Request) {
 
+	api.Db.Temperature(10)
 	//data := Data{}
 
 	/*
@@ -65,6 +67,6 @@ func (api *Api) Index(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		fmt.Fprintf(w, string(out))
 	*/
+	fmt.Fprintf(w, string("prova"))
 }
