@@ -1,18 +1,18 @@
 package server
 
 import (
-	"database/sql"
 	"fmt"
 	"os"
 	"time"
 
+	"github.com/asterix24/radiolog-mqtt/dbi"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	log "github.com/sirupsen/logrus"
 )
 
 // Server MQTT to manage device
 type Server struct {
-	Db     *sql.DB
+	Db     *dbi.DBI
 	client mqtt.Client
 }
 

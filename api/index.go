@@ -1,12 +1,10 @@
 package handlers
 
 import (
-	"database/sql"
-	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 	"time"
+
+	"github.com/asterix24/radiolog-mqtt/dbi"
 )
 
 // repository contains the details of a repository
@@ -22,49 +20,51 @@ type Data struct {
 }
 
 type Api struct {
-	Db *sql.DB
+	Db *dbi.DBI
 }
 
 // Index ...
 func (api *Api) Index(w http.ResponseWriter, r *http.Request) {
 
-	data := Data{}
+	//data := Data{}
 
-	rows, err := api.Db.Query("SELECT address, ntc0, ntc1, timestamp FROM radiologdata")
-	if err != nil {
-		log.Fatal("Unable to talk with db", err)
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	defer rows.Close()
-	for rows.Next() {
-		summary := radiologSummary{}
-		err = rows.Scan(
-			&summary.Address,
-			&summary.Ntc0,
-			&summary.Ntc1,
-			&summary.Timestamp)
-
+	/*
+		rows, err := api.Db.Query("SELECT address, ntc0, ntc1, timestamp FROM radiologdata")
 		if err != nil {
-			log.Fatal("Unable to get data", err)
+			log.Fatal("Unable to talk with db", err)
 			http.Error(w, err.Error(), 500)
 			return
 		}
-		data.Data = append(data.Data, summary)
-	}
 
-	err = rows.Err()
-	if err != nil {
-		log.Fatal("Unable to get row", err)
-		http.Error(w, err.Error(), 500)
-		return
-	}
+		defer rows.Close()
+		for rows.Next() {
+			summary := radiologSummary{}
+			err = rows.Scan(
+				&summary.Address,
+				&summary.Ntc0,
+				&summary.Ntc1,
+				&summary.Timestamp)
 
-	out, err := json.Marshal(data)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-	fmt.Fprintf(w, string(out))
+			if err != nil {
+				log.Fatal("Unable to get data", err)
+				http.Error(w, err.Error(), 500)
+				return
+			}
+			data.Data = append(data.Data, summary)
+		}
+
+		err = rows.Err()
+		if err != nil {
+			log.Fatal("Unable to get row", err)
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		out, err := json.Marshal(data)
+		if err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		fmt.Fprintf(w, string(out))
+	*/
 }
