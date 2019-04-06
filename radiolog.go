@@ -2,23 +2,27 @@ package main
 
 import (
 	"fmt"
-	"net/http"
+	"html/template"
 	"os"
 	"time"
 
-	"./api"
-	"./cloud"
-	"./evcal"
+	handlers "github.com/asterix24/radiolog-mqtt/api"
+	"github.com/asterix24/radiolog-mqtt/evcal"
+
+	server "github.com/asterix24/radiolog-mqtt/cloud"
 	"github.com/asterix24/radiolog-mqtt/dbi"
+	gintemplate "github.com/foolin/gin-template"
+
+	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 )
 
-func schedule(what func(), delay time.Duration) chan bool {
+func schedule(what func(p chan string), delay time.Duration, param chan string) chan bool {
 	stop := make(chan bool)
 
 	go func() {
 		for {
-			what()
+			what(param)
 			select {
 			case <-time.After(delay):
 			case <-stop:
@@ -44,18 +48,36 @@ func main() {
 		break
 	}
 
-	cloud_srv := &server.Server{Db: dbp}
-	cloud_srv.Init()
+	cloudSrv := &server.Server{Db: dbp}
+	cloudSrv.Init()
 
 	evcal := &evcal.EvCal{}
 	evcal.Init()
 	evcal.Events()
 
-	schedule(func() { fmt.Println("# alive") }, 10*time.Second)
-	schedule(cloud_srv.Publish, 5*time.Second)
+	// schedule(cloudSrv.Publish, 20*time.Second)
 
-	api := &handlers.Api{Db: dbp}
-	http.HandleFunc("/index", api.Index)
-	log.Fatal(http.ListenAndServe("localhost:8000", nil))
+	r := gin.Default()
+	r.HTMLRender = gintemplate.New(gintemplate.TemplateConfig{
+		Root:         "api/views",
+		Extension:    ".html",
+		Master:       "layouts/master",
+		Funcs:        template.FuncMap{},
+		DisableCache: true,
+	})
 
+	api := &handlers.Api{Db: dbp, Cld: cloudSrv, Data: make(chan string)}
+	schedule(func(p chan string) {
+		fmt.Println("# alive")
+		t := time.Now()
+		p <- fmt.Sprintf("[%s]: alive", t.String())
+	}, 10*time.Second, api.Data)
+
+	r.GET("/pub/:data", api.Publish)
+	r.GET("/index", api.Index)
+	r.GET("/status", api.Status)
+	r.POST("/event", api.Events)
+	r.GET("/ws", api.WShandler)
+
+	r.Run(":8080")
 }

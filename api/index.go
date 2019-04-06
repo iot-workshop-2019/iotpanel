@@ -1,72 +1,78 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
-	"time"
 
+	"github.com/apex/log"
+	server "github.com/asterix24/radiolog-mqtt/cloud"
 	"github.com/asterix24/radiolog-mqtt/dbi"
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 )
 
-// repository contains the details of a repository
-type radiologSummary struct {
-	Address   int
-	Ntc0      string
-	Ntc1      string
-	Timestamp time.Time
-}
-
-type Data struct {
-	Data []radiologSummary
-}
-
 type Api struct {
-	Db *dbi.DBI
+	Db   *dbi.DBI
+	Cld  *server.Server
+	Data chan string
+}
+
+// ButtonJSON stuff ..
+type ButtonJSON struct {
+	Icons  string `json:"icons"`
+	Status string `json:"status"`
+}
+
+// Publish ...
+func (api *Api) Publish(c *gin.Context) {
+	user := c.Params.ByName("name")
+	c.JSON(http.StatusOK, gin.H{"user": user, "value": 10})
 }
 
 // Index ...
-func (api *Api) Index(w http.ResponseWriter, r *http.Request) {
+func (api *Api) Index(c *gin.Context) {
+	c.HTML(http.StatusOK, "index", gin.H{"title": "MQTT Example"})
+}
 
-	api.Db.Temperature(10)
-	//data := Data{}
+// Status ...
+func (api *Api) Status(c *gin.Context) {
+	c.HTML(http.StatusOK, "status", gin.H{"url": "ws://" + c.Request.Host + "/ws"})
+}
 
-	/*
-		rows, err := api.Db.Query("SELECT address, ntc0, ntc1, timestamp FROM radiologdata")
-		if err != nil {
-			log.Fatal("Unable to talk with db", err)
-			http.Error(w, err.Error(), 500)
-			return
-		}
+// Events ...
+func (api *Api) Events(c *gin.Context) {
+	var button ButtonJSON
+	c.Bind(&button)
+	api.Cld.Publish("show", button.Icons)
+	c.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+	})
+}
 
-		defer rows.Close()
-		for rows.Next() {
-			summary := radiologSummary{}
-			err = rows.Scan(
-				&summary.Address,
-				&summary.Ntc0,
-				&summary.Ntc1,
-				&summary.Timestamp)
+var upgrader = websocket.Upgrader{} // use default options
 
+// WShandler ...
+func (api *Api) WShandler(c *gin.Context) {
+	con, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		log.Errorf("upgrade:", err)
+		return
+	}
+	defer con.Close()
+	for {
+		select {
+		case d := <-api.Data:
+			err = con.WriteMessage(1, []byte(d))
 			if err != nil {
-				log.Fatal("Unable to get data", err)
-				http.Error(w, err.Error(), 500)
-				return
+				log.Errorf("write:", err)
+				break
 			}
-			data.Data = append(data.Data, summary)
 		}
-
-		err = rows.Err()
-		if err != nil {
-			log.Fatal("Unable to get row", err)
-			http.Error(w, err.Error(), 500)
-			return
-		}
-
-		out, err := json.Marshal(data)
-		if err != nil {
-			http.Error(w, err.Error(), 500)
-			return
-		}
-	*/
-	fmt.Fprintf(w, string("prova"))
+		// mt, message, err := con.ReadMessage()
+		// if err != nil {
+		// 	log.Errorf("read:", err)
+		// 	break
+		// }
+		// log.Infof("recv: %s-%s", mt, message)
+		// err = con.WriteMessage(mt, message)
+	}
 }

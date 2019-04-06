@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/asterix24/radiolog-mqtt/dbi"
@@ -17,21 +16,21 @@ type Server struct {
 }
 
 var f mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	fmt.Printf("TOPIC: %s\n", msg.Topic())
-	fmt.Printf("MSG: %s\n", msg.Payload())
+	log.Info(fmt.Sprintf("Recv: %s %s", msg.Topic(), msg.Payload()))
 }
 
 // Publish to all device with MQTT
-func (server *Server) Publish() {
-	log.Info("qui..")
-	if token := server.client.Publish("/radiolog/data", 0, false, "Server"); token.Wait() && token.Error() != nil {
-		fmt.Println(token.Error())
-		os.Exit(1)
+func (server *Server) Publish(key string, value string) error {
+	data := fmt.Sprintf("/radiolog/%s", key)
+	if token := server.client.Publish(data, 0, false, value); token.Wait() && token.Error() != nil {
+		return token.Error()
 	}
+
+	return nil
 }
 
 // Init server module
-func (server *Server) Init() {
+func (server *Server) Init() error {
 	mqtt.ERROR = log.New()
 	opts := mqtt.NewClientOptions().AddBroker("tcp://mqtt.asterix.cloud:1883").SetClientID("radiologHub")
 	opts.SetKeepAlive(2 * time.Second)
@@ -40,11 +39,12 @@ func (server *Server) Init() {
 
 	server.client = mqtt.NewClient(opts)
 	if token := server.client.Connect(); token.Wait() && token.Error() != nil {
-		panic(token.Error())
+		return token.Error()
 	}
 
 	if token := server.client.Subscribe("/radiolog/#", 0, nil); token.Wait() && token.Error() != nil {
-		fmt.Println(token.Error())
-		os.Exit(1)
+		return token.Error()
 	}
+
+	return nil
 }
