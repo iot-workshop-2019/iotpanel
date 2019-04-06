@@ -11,9 +11,8 @@ import (
 )
 
 type Api struct {
-	Db   *dbi.DBI
-	Cld  *server.Server
-	Data chan string
+	Db  *dbi.DBI
+	Cld *server.Server
 }
 
 // ButtonJSON stuff ..
@@ -35,7 +34,7 @@ func (api *Api) Index(c *gin.Context) {
 
 // Status ...
 func (api *Api) Status(c *gin.Context) {
-	c.HTML(http.StatusOK, "status", gin.H{"url": "ws://" + c.Request.Host + "/ws"})
+	c.HTML(http.StatusOK, "status", gin.H{"url": "ws://" + c.Request.Host + "/devup"})
 }
 
 // Events ...
@@ -50,8 +49,8 @@ func (api *Api) Events(c *gin.Context) {
 
 var upgrader = websocket.Upgrader{} // use default options
 
-// WShandler ...
-func (api *Api) WShandler(c *gin.Context) {
+// Devicestatus ...
+func (api *Api) Devicestatus(c *gin.Context) {
 	con, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Errorf("upgrade:", err)
@@ -60,8 +59,8 @@ func (api *Api) WShandler(c *gin.Context) {
 	defer con.Close()
 	for {
 		select {
-		case d := <-api.Data:
-			err = con.WriteMessage(1, []byte(d))
+		case d := <-api.Cld.StatusEv:
+			err = con.WriteMessage(1, []byte(d.Data))
 			if err != nil {
 				log.Errorf("write:", err)
 				break

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"os"
 	"time"
@@ -66,18 +65,18 @@ func main() {
 		DisableCache: true,
 	})
 
-	api := &handlers.Api{Db: dbp, Cld: cloudSrv, Data: make(chan string)}
-	schedule(func(p chan string) {
-		fmt.Println("# alive")
-		t := time.Now()
-		p <- fmt.Sprintf("[%s]: alive", t.String())
-	}, 10*time.Second, api.Data)
+	api := &handlers.Api{Db: dbp, Cld: cloudSrv}
+	// schedule(func(p chan string) {
+	// 	fmt.Println("# alive")
+	// 	t := time.Now()
+	// 	p <- fmt.Sprintf("[%s]: alive", t.String())
+	// }, 10*time.Second, api.Data)
 
+	r.GET("/", api.Index)
 	r.GET("/pub/:data", api.Publish)
-	r.GET("/index", api.Index)
 	r.GET("/status", api.Status)
 	r.POST("/event", api.Events)
-	r.GET("/ws", api.WShandler)
+	r.GET("/devup", api.Devicestatus)
 
 	r.Run(":8080")
 }
