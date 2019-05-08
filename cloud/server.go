@@ -10,9 +10,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// MsgFmt ...
 type MsgFmt struct {
-	Node string
-	Data string
+	Timestamp string `json:"timestamp"`
+	Node      string `json:"node"`
+	Data      string `json:"data"`
 }
 
 // Server MQTT to manage device
@@ -26,7 +28,7 @@ type Server struct {
 var statusEv = make(chan MsgFmt)
 var dataEv = make(chan MsgFmt)
 
-var f mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
+func (server *Server) f(client mqtt.Client, msg mqtt.Message) {
 	log.Info(fmt.Sprintf("Recv: %s %s", msg.Topic(), msg.Payload()))
 	re := regexp.MustCompile(`(Node-[a-zA-Z0-9]{6})/(status)$`)
 	topic := re.FindStringSubmatch(msg.Topic())
@@ -38,9 +40,9 @@ var f mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	what := topic[2]
 	switch what {
 	case "status":
-		statusEv <- MsgFmt{Node: topic[1], Data: string(msg.Payload())}
+		statusEv <- MsgFmt{Node: topic[1], Data: string(msg.Payload()), Timestamp: time.Now().Format("2006-01-02 15:04:05")}
 	case "data":
-		dataEv <- MsgFmt{Node: topic[1], Data: string(msg.Payload())}
+		dataEv <- MsgFmt{Node: topic[1], Data: string(msg.Payload()), Timestamp: time.Now().Format("2006-01-02 15:04:05")}
 	default:
 		log.Infof("%s: %s", topic[1], msg.Payload())
 	}
@@ -61,7 +63,7 @@ func (server *Server) Init() error {
 	mqtt.ERROR = log.New()
 	opts := mqtt.NewClientOptions().AddBroker("tcp://mqtt.asterix.cloud:1883").SetClientID("radiologHub")
 	opts.SetKeepAlive(2 * time.Second)
-	opts.SetDefaultPublishHandler(f)
+	opts.SetDefaultPublishHandler(server.f)
 	opts.SetPingTimeout(1 * time.Second)
 
 	server.client = mqtt.NewClient(opts)

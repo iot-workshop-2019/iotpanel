@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/apex/log"
@@ -29,12 +30,12 @@ func (api *Api) Publish(c *gin.Context) {
 
 // Index ...
 func (api *Api) Index(c *gin.Context) {
-	c.HTML(http.StatusOK, "index", gin.H{"title": "MQTT Example"})
+	c.HTML(http.StatusOK, "index", gin.H{"title": "MQTT Example", "url": "ws://" + c.Request.Host + "/devup"})
 }
 
 // Status ...
 func (api *Api) Status(c *gin.Context) {
-	c.HTML(http.StatusOK, "status", gin.H{"url": "ws://" + c.Request.Host + "/devup"})
+	c.HTML(http.StatusOK, "status", gin.H{})
 }
 
 // Events ...
@@ -60,18 +61,22 @@ func (api *Api) Devicestatus(c *gin.Context) {
 	for {
 		select {
 		case d := <-api.Cld.StatusEv:
-			err = con.WriteMessage(1, []byte(d.Data))
+			m, err := json.Marshal(d)
 			if err != nil {
-				log.Errorf("write:", err)
+				log.Errorf("Marshall write:", err)
 				break
 			}
+			err = con.WriteMessage(1, m)
+			if err != nil {
+				log.Errorf("WS write:", err)
+				con, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+				if err != nil {
+					log.Errorf("upgrade:", err)
+					return
+				}
+				defer con.Close()
+				continue
+			}
 		}
-		// mt, message, err := con.ReadMessage()
-		// if err != nil {
-		// 	log.Errorf("read:", err)
-		// 	break
-		// }
-		// log.Infof("recv: %s-%s", mt, message)
-		// err = con.WriteMessage(mt, message)
 	}
 }

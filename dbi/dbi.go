@@ -78,7 +78,7 @@ func (dbp *DBI) Temperature(address uint) {
 	dbp.db.Where(&Radiologdata{Address: address}).Find(&d)
 
 	for i := 0; i < 10; i++ {
-		log.Info(d[i].Ntc0)
+		fmt.Println(d[i].Ntc0)
 	}
 }
 
@@ -96,8 +96,7 @@ func (dbp *DBI) Init() error {
 		log.Error("Unable to connect to DB: ", err)
 		return err
 	}
-
-	defer dbp.db.Close()
+	//defer dbp.db.Close()
 	log.Info("Successfully connected!")
 
 	// Migrate the schema
