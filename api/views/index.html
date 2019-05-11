@@ -1,163 +1,282 @@
 {{define "head"}}
-<style>
-    .ok {
-        color: green;
-    }
-</style>
 {{end}}
-
 
 {{define "content"}}
-<div class="row">
-    <div class="col-sm-3">
-        <div class="card border-primary mb-3">
-            <div class="card-header">Send MQTT Message</div>
-            <div class="card-body text-primary">
-                <h5 class="card-title" id="status" class="hello">Status: -</h5>
-                <p class="card-text">
-                    <button id="click" type="button" class="btn btn-primary btn-lg btn-block" data-toggle="button"
-                        aria-pressed="false" autocomplete="off" name="smile"><i class="far fa-smile"></i></button>
-                    <button id="click" type="button" class="btn btn-primary btn-lg btn-block" data-toggle="button"
-                        aria-pressed="false" autocomplete="off" name="cross"><i class="fas fa-times"></i></button>
-                    <button id="click" type="button" class="btn btn-primary btn-lg btn-block" data-toggle="button"
-                        aria-pressed="false" autocomplete="off" name="flushed"><i class="far fa-flushed"></i></button>
-                    <button id="click" type="button" class="btn btn-primary btn-lg btn-block" data-toggle="button"
-                        aria-pressed="false" autocomplete="off" name="tre">tre</button>
-                </p>
-            </div>
-        </div>
+<section>
+    <header>
+        <h2 id="GridSystem">Send Message Box</h2>
+        <p>Publish message display message on devices</p>
+    </header>
+    <div class="image-grid">
+        <button id="click" type="button" class="btn btn-primary btn-ghost" data-toggle="button" aria-pressed="false"
+            autocomplete="off" name="smile"><i class="far fa-smile fa-5x"></i></button>
+        <button id="click" type="button" class="btn btn-primary btn-ghost" data-toggle="button" aria-pressed="false"
+            autocomplete="off" name="flushed"><i class="far fa-flushed fa-5x"></i></button>
+        <button id="click" type="button" class="btn btn-primary btn-ghost" data-toggle="button" aria-pressed="false"
+            autocomplete="off" name="cross"><i class="fas fa-times fa-5x"></i></button>
     </div>
-    <div class="col-sm-8">
-        <div class="card border-primary mb-3">
-            <div class="card-header">Devices Status</div>
-            <div class="card-body text-primary">
-                <div class="row">
-                    <div class="col-sm-4">
-                        <h5 class="card-title">Status</h5>
-                        <button type="button" class="btn btn-danger" id="dev_status">OFFLINE</button>
-                    </div>
-                    <div class="col-sm-4">
-                        <h5 class="card-title">Connection</h5>
-                        <button type="button" class="btn btn-secondary" id=recon>Refresh</button>
-                    </div>
+    <hr>
+    <div class="components pixel-grid">
+        <section>
+            <header>
+                <h2 id="GridSystem">Display Matrix</h2>
+                <p>Picked meas pixel on</p>
+            </header>
+            <canvas class="mtx-border" id="mtx" width="320" height="320"></canvas>
+            <hr>
+            <form action="#">
+                <legend>
+                    Matrix encoded data
+                </legend>
+                <div>
+                    <input id="mtx-encode" name="itext" type="text" placeholder="001122334455667788" />
+                    <button id="send" class="btn btn-default btn-block">Send</button>
+                    <button id="encode" class="btn btn-primary btn-block">Generate</button>
                 </div>
-                <p class="card-text">
-                    <table class="table" id=dev_table>
-                        <thead class="thead-light">
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Timestamp</th>
-                                <th scope="col">Node</th>
-                                <th scope="col">Status</th>
-                                <th scope="col">Uptime</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </p>
+            </form>
+        </section>
+    </div>
+    <hr>
+
+
+    <!--
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="card border-primary mb-3">
+                <div class="card-header">Send MQTT Message</div>
+                <div class="card-body text-primary">
+                    <h5 class="card-title" id="status" class="hello">Status: -</h5>
+                    <p class="card-text">
+                        <button id="click" type="button" class="btn btn-primary btn-lg btn-block" data-toggle="button"
+                            aria-pressed="false" autocomplete="off" name="smile"><i class="far fa-smile"></i></button>
+                        <button id="click" type="button" class="btn btn-primary btn-lg btn-block" data-toggle="button"
+                            aria-pressed="false" autocomplete="off" name="cross"><i class="fas fa-times"></i></button>
+                        <button id="click" type="button" class="btn btn-primary btn-lg btn-block" data-toggle="button"
+                            aria-pressed="false" autocomplete="off" name="flushed"><i
+                                class="far fa-flushed"></i></button>
+                        <button id="click" type="button" class="btn btn-primary btn-lg btn-block" data-toggle="button"
+                            aria-pressed="false" autocomplete="off" name="tre">tre</button>
+                        <button id="click" type="button" class="btn btn-primary btn-lg btn-block" data-toggle="button"
+                            aria-pressed="false" autocomplete="off" name="tre">tre</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-8">
+            <div class="card border-primary mb-3">
+                <div class="card-header">Devices Status</div>
+                <div class="card-body text-primary">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <h5 class="card-title">Status</h5>
+                            <button type="button" class="btn btn-danger" id="dev_status">OFFLINE</button>
+                        </div>
+                        <div class="col-sm-4">
+                            <h5 class="card-title">Connection</h5>
+                            <button type="button" class="btn btn-secondary" id=recon>Refresh</button>
+                        </div>
+                    </div>
+                    <p class="card-text">
+                        <table class="table" id=dev_table>
+                            <thead class="thead-light">
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Timestamp</th>
+                                    <th scope="col">Node</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Uptime</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </p>
+                </div>
             </div>
         </div>
     </div>
-</div>
-{{end}}
+-->
+    {{end}}
 
-{{ define "javascript"}}
-<script type="text/javascript">
+    {{ define "javascript"}}
+    <script type="text/javascript">
 
-    function editTableElement(table, key, value, timestamp) {
-        var ret = false;
-        table.find("tr").each(function (rowIndex, r) {
-            var sameNode = false;
-            $(this).find("td").each(function (colIndex, c) {
-                if (c.textContent === key) {
-                    sameNode = true;
-                }
-                if (sameNode && colIndex == 3) {
-                    c.textContent = value;
-                    ret = true;
-                }
-                if (sameNode && colIndex == 0) {
-                    c.textContent = timestamp;
+        var s = [0, 0, 0, 0, 0, 0, 0, 0];
+        function hex_to_ascii(str1) {
+            var hex = str1.toString();
+            var str = '';
+            for (var n = 0; n < hex.length; n += 2) {
+                str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+            }
+            return str;
+        }
+
+        function encodeMatrix(c) {
+            c.getObjects().forEach(function (target) {
+                if (target) {
+                    var idx = (target.code >> 8);
+                    if (target.status) {
+                        s[idx] |= (target.code & 0xff);
+                        console.log(s[idx].toString(16), idx);
+                    } else {
+                        s[idx] &= ~(target.code & 0xff);
+                    }
                 }
             });
-            if (ret) {
-                $(this).addClass("table-success");
+            var text = "";
+            for (i = 0; i < s.length; i++) {
+                var x = s[i].toString(16);
+                if (x.length == 1)
+                    x = "0" + x;
+                text += " " + x;
             }
-        });
-        return ret;
-    }
-
-    function cleanTableStatus() {
-        $("#dev_table").find("tr").each(function (rowIndex, r) {
-            $(this).removeClass("table-success");
-        });
-    }
-
-    function appendTableColumn(table, rowData) {
-        var lastRow = $('<tr/>').appendTo(table.find('tbody:last'));
-        $.each(rowData, function (colIndex, c) {
-            lastRow.append($("<t" + (colIndex == 0 ? "h" : "d") + "/>").text(c));
-        });
-
-        return lastRow;
-    }
-
-    function devicesStatus() {
-        var ws = new WebSocket("{{.url}}");
-        ws.onopen = function (evt) {
-            $("#dev_status").text("OPEN");
-            $("#dev_status").removeClass("btn-danger");
-            $("#dev_status").addClass("btn-success");
+            $("#mtx-encode").val(text);
         }
 
-        ws.onclose = function (evt) {
-            $("#dev_status").text("CLOSE");
-            $("#dev_status").removeClass("btn-success");
-            $("#dev_status").addClass("btn-danger");
-            ws = null;
-        }
+        function matrixUpdate() {
+            var canvas = new fabric.Canvas('mtx', {
+                backgroundColor: 'black',
+            });
 
-        ws.onmessage = function (evt) {
-            var d = JSON.parse(evt.data)
-            var edit = editTableElement($("#dev_table"), d.node, d.data, d.timestamp);
-            if (!edit) {
-                appendTableColumn($("#dev_table"), [$("#dev_table tr").length, d.timestamp, d.node, "alive", d.data]);
+            canvas.on('mouse:down', function (options) {
+                if (options.target) {
+                    if (options.target.status) {
+                        options.target.set("fill", "#d3babb");
+                        options.target.set("status", false);
+                    } else {
+                        options.target.set("fill", 'red');
+                        options.target.set("status", true);
+                    }
+                    encodeMatrix(canvas);
+                    canvas.renderAll();
+                }
+            });
+
+            var elm_h = canvas.height / 8;
+            var elm_w = canvas.width / 8;
+
+            for (i = 0; i < 8; i++) {
+                for (j = 0; j < 8; j++) {
+                    var circle = new fabric.Circle({
+                        top: elm_h * i + 5,
+                        left: elm_w * j + 5,
+                        radius: (elm_h / 2) - 5,
+                        fill: '#d3babb',
+                        selectable: false,
+                        status: false,
+                        code: (i << 8) | (1 << j)
+                    });
+                    canvas.add(circle);
+                }
             }
         }
 
-        ws.onerror = function (evt) {
-            $("#dev_status").text("ERROR");
-            $("#dev_status").removeClass("btn-success");
-            $("#dev_status").addClass("btn-danger");
-        }
-    }
 
-    $("#recon").on("click", function () {
+
+        function editTableElement(table, key, value, timestamp) {
+            var ret = false;
+            table.find("tr").each(function (rowIndex, r) {
+                var sameNode = false;
+                $(this).find("td").each(function (colIndex, c) {
+                    if (c.textContent === key) {
+                        sameNode = true;
+                    }
+                    if (sameNode && colIndex == 3) {
+                        c.textContent = value;
+                        ret = true;
+                    }
+                    if (sameNode && colIndex == 0) {
+                        c.textContent = timestamp;
+                    }
+                });
+                if (ret) {
+                    $(this).addClass("table-success");
+                }
+            });
+            return ret;
+        }
+
+        function cleanTableStatus() {
+            $("#dev_table").find("tr").each(function (rowIndex, r) {
+                $(this).removeClass("table-success");
+            });
+        }
+
+        function appendTableColumn(table, rowData) {
+            var lastRow = $('<tr/>').appendTo(table.find('tbody:last'));
+            $.each(rowData, function (colIndex, c) {
+                lastRow.append($("<t" + (colIndex == 0 ? "h" : "d") + "/>").text(c));
+            });
+
+            return lastRow;
+        }
+
+        $("#encode").on("click", function (e) {
+            $("#mtx-encode").val("ciao");
+            e.preventDefault();
+        });
+
+        $("#send").on("click", function (e) {
+            $("#mtx-encode").val("send");
+            e.preventDefault();
+        });
+
+        function devicesStatus() {
+            var ws = new WebSocket("{{.url}}");
+            ws.onopen = function (evt) {
+                $("#dev_status").text("OPEN");
+                $("#dev_status").removeClass("btn-danger");
+                $("#dev_status").addClass("btn-success");
+            }
+
+            ws.onclose = function (evt) {
+                $("#dev_status").text("CLOSE");
+                $("#dev_status").removeClass("btn-success");
+                $("#dev_status").addClass("btn-danger");
+                ws = null;
+            }
+
+            ws.onmessage = function (evt) {
+                var d = JSON.parse(evt.data)
+                var edit = editTableElement($("#dev_table"), d.node, d.data, d.timestamp);
+                if (!edit) {
+                    appendTableColumn($("#dev_table"), [$("#dev_table tr").length, d.timestamp, d.node, "alive", d.data]);
+                }
+            }
+
+            ws.onerror = function (evt) {
+                $("#dev_status").text("ERROR");
+                $("#dev_status").removeClass("btn-success");
+                $("#dev_status").addClass("btn-danger");
+            }
+        }
+
+        $("#recon").on("click", function () {
+            devicesStatus();
+        });
+
+
+        $("button#click").click(function () {
+            var cur = $(this);
+            $.ajax({
+                type: "POST",
+                url: "event",
+                data: JSON.stringify({ icons: $(this).attr("name"), status: "ok" }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (msg) {
+                    $("#status").attr("class", "ok");
+                    $("#status").text("Status: " + cur.attr("name") + "..ok!");
+                },
+                error: function (msg) {
+                    $("#status").text("Error!");
+                }
+            });
+        });
+
         devicesStatus();
-    });
+        matrixUpdate();
+        setInterval(cleanTableStatus, 5000);
 
-
-    $("button#click").click(function () {
-        var cur = $(this);
-        $.ajax({
-            type: "POST",
-            url: "event",
-            data: JSON.stringify({ icons: $(this).attr("name"), status: "ok" }),
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (msg) {
-                $("#status").attr("class", "ok");
-                $("#status").text("Status: " + cur.attr("name") + "..ok!");
-            },
-            error: function (msg) {
-                $("#status").text("Error!");
-            }
-        });
-    });
-
-    devicesStatus();
-    setInterval(cleanTableStatus, 5000);
-
-</script>
-{{end}}
+    </script>
+    {{end}}
