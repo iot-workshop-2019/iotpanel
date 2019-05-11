@@ -58,12 +58,24 @@ func main() {
 
 	r := gin.Default()
 	r.HTMLRender = gintemplate.New(gintemplate.TemplateConfig{
-		Root:         "api/views",
-		Extension:    ".html",
-		Master:       "layouts/master",
-		Funcs:        template.FuncMap{},
+		Root:      "api/views",
+		Extension: ".html",
+		Master:    "layouts/master",
+		Funcs: template.FuncMap{
+			"seq": func(n int) []int {
+				nn := make([]int, n)
+				for i := 0; i < n; i++ {
+					nn[i] = i
+				}
+				return nn
+			},
+		},
 		DisableCache: true,
 	})
+
+	r.Static("/images", "./api/views/images")
+	r.Static("/static", "./api/views/static")
+	r.Static("/test", "./api/views/")
 
 	api := &handlers.Api{Db: dbp, Cld: cloudSrv}
 	// schedule(func(p chan string) {
