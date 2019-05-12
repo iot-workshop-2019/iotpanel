@@ -41,7 +41,8 @@
                             <legend>
                                 Matrix encoded data to send
                             </legend>
-                            <input id="mtx-encode" type="text" placeholder="00 00 00 00 00 00 00 00 00" />
+                            <input id="mtx-encode" type="text" maxlength="23"
+                                placeholder="00 00 00 00 00 00 00 00 00" />
                             <button id="decode" class="btn btn-primary btn-ghost btn-block">Generate</button>
                         </form>
                         <hr>
@@ -205,6 +206,22 @@
             }
         }
 
+
+        $("#decode").on("click", function (e) {
+            decodeMatrix(canvas);
+            e.preventDefault();
+        });
+
+        $("#send").on("click", function (e) {
+            e.preventDefault();
+        });
+
+        $("#mtx-encode").on('keyup', function (e) {
+            var target = e.target, position = target.selectionEnd, length = target.value.length;
+            target.value = target.value.replace(/[^\da-f]/g, '').replace(/(.{2})/g, '$1 ').trim();
+            target.selectionEnd = position += ((target.value.charAt(position - 1) === ' ' && target.value.charAt(length - 1) === ' ' && length !== target.value.length) ? 1 : 0);
+        });
+
         function editTableElement(table, key, value, timestamp) {
             var ret = false;
             table.find("tr").each(function (rowIndex, r) {
@@ -243,15 +260,6 @@
             return lastRow;
         }
 
-        $("#decode").on("click", function (e) {
-            decodeMatrix(canvas);
-            e.preventDefault();
-        });
-
-        $("#send").on("click", function (e) {
-            $("#mtx-encode").val("send");
-            e.preventDefault();
-        });
 
         function devicesStatus() {
             var ws = new WebSocket("{{.url}}");
