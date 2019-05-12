@@ -62,6 +62,8 @@
                         <option> Option 02 </option>
                     </select>
                     <button id="send" class="btn btn-error btn-ghost btn-block">Send</button>
+                    <label for="select">Status command:</label>
+                    <button id="send-status" type="button" class="btn btn-primary btn-ghost btn-block">-</button>
                 </td>
             </tr>
         </tbody>
@@ -71,28 +73,6 @@
 
 
 <!--
-    <div class="row">
-        <div class="col-sm-3">
-            <div class="card border-primary mb-3">
-                <div class="card-header">Send MQTT Message</div>
-                <div class="card-body text-primary">
-                    <h5 class="card-title" id="status" class="hello">Status: -</h5>
-                    <p class="card-text">
-                        <button id="click" type="button" class="btn btn-primary btn-lg btn-block" data-toggle="button"
-                            aria-pressed="false" autocomplete="off" name="smile"><i class="far fa-smile"></i></button>
-                        <button id="click" type="button" class="btn btn-primary btn-lg btn-block" data-toggle="button"
-                            aria-pressed="false" autocomplete="off" name="cross"><i class="fas fa-times"></i></button>
-                        <button id="click" type="button" class="btn btn-primary btn-lg btn-block" data-toggle="button"
-                            aria-pressed="false" autocomplete="off" name="flushed"><i
-                                class="far fa-flushed"></i></button>
-                        <button id="click" type="button" class="btn btn-primary btn-lg btn-block" data-toggle="button"
-                            aria-pressed="false" autocomplete="off" name="tre">tre</button>
-                        <button id="click" type="button" class="btn btn-primary btn-lg btn-block" data-toggle="button"
-                            aria-pressed="false" autocomplete="off" name="tre">tre</button>
-                    </p>
-                </div>
-            </div>
-        </div>
         <div class="col-sm-8">
             <div class="card border-primary mb-3">
                 <div class="card-header">Devices Status</div>
@@ -125,13 +105,11 @@
                 </div>
             </div>
         </div>
-    </div>
 -->
 {{end}}
 
 {{ define "javascript"}}
 <script type="text/javascript">
-
     var s = [0, 0, 0, 0, 0, 0, 0, 0];
     var canvas = new fabric.Canvas('mtx', {
         backgroundColor: 'black',
@@ -213,20 +191,7 @@
         }
     }
 
-
     $("#decode").on("click", function (e) {
-        decodeMatrix(canvas);
-        e.preventDefault();
-    });
-
-    $("#reset-on").on("click", function (e) {
-        $("#mtx-encode").val("ff ff ff ff ff ff ff ff");
-        decodeMatrix(canvas);
-        e.preventDefault();
-    });
-
-    $("#reset-off").on("click", function (e) {
-        $("#mtx-encode").val("00 00 00 00 00 00 00 00");
         decodeMatrix(canvas);
         e.preventDefault();
     });
@@ -237,18 +202,38 @@
         e.preventDefault();
     });
 
-    $("#send").on("click", function (e) {
-        e.preventDefault();
-    });
-
     $("#mtx-encode").on('keyup', function (e) {
         var target = e.target, position = target.selectionEnd, length = target.value.length;
         target.value = target.value.replace(/[^\da-f]/g, '').replace(/(.{2})/g, '$1 ').trim();
         target.selectionEnd = position += ((target.value.charAt(position - 1) === ' ' && target.value.charAt(length - 1) === ' ' && length !== target.value.length) ? 1 : 0);
     });
 
-
-
+    $("#send").click(function (e) {
+        var cur = $(this);
+        var data = $("#mtx-encode").val();
+        data = data.replace(/ /g, '');
+        console.log(data);
+        $.ajax({
+            type: "POST",
+            url: "event",
+            data: JSON.stringify({ icons: data, status: "ok" }),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (msg) {
+                $("#send-status").removeClass("btn-primary");
+                $("#send-status").removeClass("btn-error");
+                $("#send-status").addClass("btn-default");
+                $("#send-status").text("OK!");
+            },
+            error: function (msg) {
+                $("#send-status").removeClass("btn-primary");
+                $("#send-status").removeClass("btn-default");
+                $("#send-status").addClass("btn-error");
+                $("#send-status").text(msg + "..FAIL!");
+            }
+        });
+        e.preventDefault();
+    });
 
     function editTableElement(table, key, value, timestamp) {
         var ret = false;
@@ -284,10 +269,8 @@
         $.each(rowData, function (colIndex, c) {
             lastRow.append($("<t" + (colIndex == 0 ? "h" : "d") + "/>").text(c));
         });
-
         return lastRow;
     }
-
 
     function devicesStatus() {
         var ws = new WebSocket("{{.url}}");
@@ -323,28 +306,8 @@
         devicesStatus();
     });
 
-
-    $("button#click").click(function () {
-        var cur = $(this);
-        $.ajax({
-            type: "POST",
-            url: "event",
-            data: JSON.stringify({ icons: $(this).attr("name"), status: "ok" }),
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (msg) {
-                $("#status").attr("class", "ok");
-                $("#status").text("Status: " + cur.attr("name") + "..ok!");
-            },
-            error: function (msg) {
-                $("#status").text("Error!");
-            }
-        });
-    });
-
     devicesStatus();
     matrixUpdate(canvas);
     setInterval(cleanTableStatus, 5000);
-
 </script>
 {{end}}
