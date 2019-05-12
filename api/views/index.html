@@ -16,25 +16,48 @@
             autocomplete="off" name="cross"><i class="fas fa-times fa-5x"></i></button>
     </div>
     <hr>
-    <div class="components pixel-grid">
-        <section>
-            <header>
-                <h2 id="GridSystem">Display Matrix</h2>
-                <p>Picked meas pixel on</p>
-            </header>
-            <canvas class="mtx-border" id="mtx" width="320" height="320"></canvas>
-            <hr>
-            <form action="#">
-                <legend>
-                    Matrix encoded data
-                </legend>
-                <div>
-                    <input id="mtx-encode" name="itext" type="text" placeholder="001122334455667788" />
-                    <button id="send" class="btn btn-default btn-block">Send</button>
-                    <button id="encode" class="btn btn-primary btn-block">Generate</button>
-                </div>
-            </form>
-        </section>
+    <div class="components">
+        <table style="border:none">
+            <caption>
+                <p>Matrix IoT Led's</p>
+            </caption>
+            <tbody>
+                <tr>
+                    <td>
+                        <center>Pick circle on matrix to power on a led.</center>
+                    </td>
+                    <td>
+                        <center>Command panell</center>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <center>
+                            <canvas class="mtx-border" id="mtx" width="400" height="400"></canvas>
+                        </center>
+                    </td>
+                    <td>
+                        <form action="#">
+                            <legend>
+                                Matrix encoded data to send
+                            </legend>
+                            <input id="mtx-encode" type="text" placeholder="00 00 00 00 00 00 00 00 00" />
+                            <button id="decode" class="btn btn-primary btn-ghost btn-block">Generate</button>
+                        </form>
+                        <hr>
+                        <button id="reset" class="btn btn-default btn-ghost btn-block">All OFF</button>
+                        <button id="reset" class="btn btn-primary btn-ghost btn-block">All ON</button>
+                        <hr>
+                        <label for="select">Send command to device:</label>
+                        <select id="select" name="select">
+                            <option> All </option>
+                            <option> Option 02 </option>
+                        </select>
+                        <button id="send" class="btn btn-error btn-ghost btn-block">Send</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
     <hr>
 
@@ -102,14 +125,9 @@
     <script type="text/javascript">
 
         var s = [0, 0, 0, 0, 0, 0, 0, 0];
-        function hex_to_ascii(str1) {
-            var hex = str1.toString();
-            var str = '';
-            for (var n = 0; n < hex.length; n += 2) {
-                str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
-            }
-            return str;
-        }
+        var canvas = new fabric.Canvas('mtx', {
+            backgroundColor: 'black',
+        });
 
         function encodeMatrix(c) {
             c.getObjects().forEach(function (target) {
@@ -128,50 +146,64 @@
                 var x = s[i].toString(16);
                 if (x.length == 1)
                     x = "0" + x;
-                text += " " + x;
+                text += x + " ";
             }
             $("#mtx-encode").val(text);
         }
 
-        function matrixUpdate() {
-            var canvas = new fabric.Canvas('mtx', {
-                backgroundColor: 'black',
+        function decodeMatrix(c) {
+            var txt = $("#mtx-encode").val();
+            var m = txt.trim().split(" ");
+            c.getObjects().forEach(function (target) {
+                if (target) {
+                    var idx = (target.code & 0xff00) >> 8;
+                    var code = target.code & 0xff;
+                    var n = parseInt(m[idx], 16);
+                    if (n & code) {
+                        target.set("fill", 'red');
+                        target.set("status", true);
+                    } else {
+                        target.set("fill", "#605a5a");
+                        target.set("status", false);
+                    }
+                }
             });
+            c.renderAll();
+        }
 
-            canvas.on('mouse:down', function (options) {
+        function matrixUpdate(can) {
+            can.on('mouse:down', function (options) {
                 if (options.target) {
                     if (options.target.status) {
-                        options.target.set("fill", "#d3babb");
+                        options.target.set("fill", "#605a5a");
                         options.target.set("status", false);
                     } else {
                         options.target.set("fill", 'red');
                         options.target.set("status", true);
                     }
-                    encodeMatrix(canvas);
-                    canvas.renderAll();
+                    encodeMatrix(can);
+                    can.renderAll();
                 }
             });
 
-            var elm_h = canvas.height / 8;
-            var elm_w = canvas.width / 8;
-
+            var elm_h = can.height / 8;
+            var elm_w = can.width / 8;
             for (i = 0; i < 8; i++) {
                 for (j = 0; j < 8; j++) {
                     var circle = new fabric.Circle({
                         top: elm_h * i + 5,
                         left: elm_w * j + 5,
                         radius: (elm_h / 2) - 5,
-                        fill: '#d3babb',
+                        fill: '#605a5a',
                         selectable: false,
                         status: false,
-                        code: (i << 8) | (1 << j)
+                        code: (i << 8) | (1 << j),
+                        objectCaching: false
                     });
-                    canvas.add(circle);
+                    can.add(circle);
                 }
             }
         }
-
-
 
         function editTableElement(table, key, value, timestamp) {
             var ret = false;
@@ -211,8 +243,8 @@
             return lastRow;
         }
 
-        $("#encode").on("click", function (e) {
-            $("#mtx-encode").val("ciao");
+        $("#decode").on("click", function (e) {
+            decodeMatrix(canvas);
             e.preventDefault();
         });
 
@@ -275,7 +307,7 @@
         });
 
         devicesStatus();
-        matrixUpdate();
+        matrixUpdate(canvas);
         setInterval(cleanTableStatus, 5000);
 
     </script>

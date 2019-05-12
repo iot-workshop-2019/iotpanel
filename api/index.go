@@ -30,7 +30,12 @@ func (api *Api) Publish(c *gin.Context) {
 
 // Index ...
 func (api *Api) Index(c *gin.Context) {
-	c.HTML(http.StatusOK, "index", gin.H{"title": "MQTT Example", "url": "ws://" + c.Request.Host + "/devup"})
+	c.HTML(http.StatusOK, "index", gin.H{"title": "MQTT Example", "url": "ws://" + c.Request.Host + "/devup", "ncol": 8, "nrow": 8})
+}
+
+// Test ...
+func (api *Api) Test(c *gin.Context) {
+	c.HTML(http.StatusOK, "test", gin.H{"title": "Terminal"})
 }
 
 // Status ...
