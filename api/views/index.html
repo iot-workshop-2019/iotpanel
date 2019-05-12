@@ -2,68 +2,75 @@
 {{end}}
 
 {{define "content"}}
-<section>
-    <header>
-        <h2 id="GridSystem">Send Message Box</h2>
-        <p>Publish message display message on devices</p>
-    </header>
-    <div class="image-grid">
-        <button id="click" type="button" class="btn btn-primary btn-ghost" data-toggle="button" aria-pressed="false"
-            autocomplete="off" name="smile"><i class="far fa-smile fa-5x"></i></button>
-        <button id="click" type="button" class="btn btn-primary btn-ghost" data-toggle="button" aria-pressed="false"
-            autocomplete="off" name="flushed"><i class="far fa-flushed fa-5x"></i></button>
-        <button id="click" type="button" class="btn btn-primary btn-ghost" data-toggle="button" aria-pressed="false"
-            autocomplete="off" name="cross"><i class="fas fa-times fa-5x"></i></button>
-    </div>
-    <hr>
-    <div class="components">
-        <table style="border:none">
-            <caption>
-                <p>Matrix IoT Led's</p>
-            </caption>
-            <tbody>
-                <tr>
-                    <td>
-                        <center>Pick circle on matrix to power on a led.</center>
-                    </td>
-                    <td>
-                        <center>Command panell</center>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <center>
-                            <canvas class="mtx-border" id="mtx" width="400" height="400"></canvas>
-                        </center>
-                    </td>
-                    <td>
-                        <form action="#">
-                            <legend>
-                                Matrix encoded data to send
-                            </legend>
-                            <input id="mtx-encode" type="text" maxlength="23"
-                                placeholder="00 00 00 00 00 00 00 00 00" />
-                            <button id="decode" class="btn btn-primary btn-ghost btn-block">Generate</button>
-                        </form>
-                        <hr>
-                        <button id="reset" class="btn btn-default btn-ghost btn-block">All OFF</button>
-                        <button id="reset" class="btn btn-primary btn-ghost btn-block">All ON</button>
-                        <hr>
-                        <label for="select">Send command to device:</label>
-                        <select id="select" name="select">
-                            <option> All </option>
-                            <option> Option 02 </option>
-                        </select>
-                        <button id="send" class="btn btn-error btn-ghost btn-block">Send</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    <hr>
+<div class="components">
+    <table style="border:none">
+        <caption>
+            <p>Matrix IoT Led's</p>
+        </caption>
+        <tbody>
+            <tr>
+                <td>
+                    <center>Pick circle on matrix to power on a led.</center>
+                </td>
+                <td>
+                    <center>Command panell</center>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <br>
+                    <center>
+                        <canvas class="mtx-border" id="mtx" width="400" height="400"></canvas>
+                    </center>
+                    <br>
+                </td>
+                <td>
+                    <form action="#">
+                        <legend>
+                            Matrix encoded data to send
+                        </legend>
+                        <input id="mtx-encode" type="text" maxlength="23" placeholder="00 00 00 00 00 00 00 00 00" />
+                        <button id="decode" class="btn btn-primary btn-ghost btn-block">Generate</button>
+                    </form>
+                    <hr>
+                    <div class="image-grid">
+                        <button type="button" class="btn btn-default btn-ghost" cmd="3c 42 a5 81 a5 99 42 3c"
+                            name="cmd-button">
+                            <i class="far fa-smile fa-2x"></i>
+                        </button>
+                        <button type="button" class="btn btn-default btn-ghost" cmd="3c 42 81 a5 81 bd 42 3c"
+                            name="cmd-button">
+                            <i class="far fa-flushed fa-2x"></i>
+                        </button>
+                        <button type="button" class="btn btn-default btn-ghost" cmd="81 42 24 18 18 24 42 81"
+                            name="cmd-button">
+                            <i class="fas fa-times fa-2x"></i>
+                        </button>
+                        <button type="button" class="btn btn-default btn-ghost" cmd="10 30 7f ff ff 7f 30 10"
+                            name="cmd-button">
+                            <i class="fas fa-long-arrow-alt-right fa-2x"></i>
+                        </button>
+                        <button type="button" class="btn btn-default btn-ghost" cmd="00 00 00 00 00 00 00 00"
+                            name="cmd-button">All OFF</button>
+                        <button type="button" class="btn btn-default btn-ghost" cmd="ff ff ff ff ff ff ff ff"
+                            name="cmd-button">All ON</button>
+                    </div>
+                    <hr>
+                    <label for="select">Send command to device:</label>
+                    <select id="select" name="select">
+                        <option> All </option>
+                        <option> Option 02 </option>
+                    </select>
+                    <button id="send" class="btn btn-error btn-ghost btn-block">Send</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<hr>
 
 
-    <!--
+<!--
     <div class="row">
         <div class="col-sm-3">
             <div class="card border-primary mb-3">
@@ -120,203 +127,224 @@
         </div>
     </div>
 -->
-    {{end}}
+{{end}}
 
-    {{ define "javascript"}}
-    <script type="text/javascript">
+{{ define "javascript"}}
+<script type="text/javascript">
 
-        var s = [0, 0, 0, 0, 0, 0, 0, 0];
-        var canvas = new fabric.Canvas('mtx', {
-            backgroundColor: 'black',
-        });
+    var s = [0, 0, 0, 0, 0, 0, 0, 0];
+    var canvas = new fabric.Canvas('mtx', {
+        backgroundColor: 'black',
+    });
 
-        function encodeMatrix(c) {
-            c.getObjects().forEach(function (target) {
-                if (target) {
-                    var idx = (target.code >> 8);
-                    if (target.status) {
-                        s[idx] |= (target.code & 0xff);
-                        console.log(s[idx].toString(16), idx);
-                    } else {
-                        s[idx] &= ~(target.code & 0xff);
-                    }
-                }
-            });
-            var text = "";
-            for (i = 0; i < s.length; i++) {
-                var x = s[i].toString(16);
-                if (x.length == 1)
-                    x = "0" + x;
-                text += x + " ";
-            }
-            $("#mtx-encode").val(text);
-        }
-
-        function decodeMatrix(c) {
-            var txt = $("#mtx-encode").val();
-            var m = txt.trim().split(" ");
-            c.getObjects().forEach(function (target) {
-                if (target) {
-                    var idx = (target.code & 0xff00) >> 8;
-                    var code = target.code & 0xff;
-                    var n = parseInt(m[idx], 16);
-                    if (n & code) {
-                        target.set("fill", 'red');
-                        target.set("status", true);
-                    } else {
-                        target.set("fill", "#605a5a");
-                        target.set("status", false);
-                    }
-                }
-            });
-            c.renderAll();
-        }
-
-        function matrixUpdate(can) {
-            can.on('mouse:down', function (options) {
-                if (options.target) {
-                    if (options.target.status) {
-                        options.target.set("fill", "#605a5a");
-                        options.target.set("status", false);
-                    } else {
-                        options.target.set("fill", 'red');
-                        options.target.set("status", true);
-                    }
-                    encodeMatrix(can);
-                    can.renderAll();
-                }
-            });
-
-            var elm_h = can.height / 8;
-            var elm_w = can.width / 8;
-            for (i = 0; i < 8; i++) {
-                for (j = 0; j < 8; j++) {
-                    var circle = new fabric.Circle({
-                        top: elm_h * i + 5,
-                        left: elm_w * j + 5,
-                        radius: (elm_h / 2) - 5,
-                        fill: '#605a5a',
-                        selectable: false,
-                        status: false,
-                        code: (i << 8) | (1 << j),
-                        objectCaching: false
-                    });
-                    can.add(circle);
+    function encodeMatrix(c) {
+        c.getObjects().forEach(function (target) {
+            if (target) {
+                var idx = (target.code >> 8);
+                if (target.status) {
+                    s[idx] |= (target.code & 0xff);
+                    console.log(s[idx].toString(16), idx);
+                } else {
+                    s[idx] &= ~(target.code & 0xff);
                 }
             }
+        });
+        var text = "";
+        for (i = 0; i < s.length; i++) {
+            var x = s[i].toString(16);
+            if (x.length == 1)
+                x = "0" + x;
+            text += x + " ";
         }
+        $("#mtx-encode").val(text);
+    }
 
+    function decodeMatrix(c) {
+        var txt = $("#mtx-encode").val();
+        var m = txt.trim().split(" ");
+        c.getObjects().forEach(function (target) {
+            if (target) {
+                var idx = (target.code & 0xff00) >> 8;
+                var code = target.code & 0xff;
+                var n = parseInt(m[idx], 16);
+                if (n & code) {
+                    target.set("fill", 'red');
+                    target.set("status", true);
+                } else {
+                    target.set("fill", "#4c4a4a");
+                    target.set("status", false);
+                }
+            }
+        });
+        c.renderAll();
+    }
 
-        $("#decode").on("click", function (e) {
-            decodeMatrix(canvas);
-            e.preventDefault();
+    function matrixUpdate(can) {
+        can.on('mouse:down', function (options) {
+            if (options.target) {
+                if (options.target.status) {
+                    options.target.set("fill", "#4c4a4a");
+                    options.target.set("status", false);
+                } else {
+                    options.target.set("fill", 'red');
+                    options.target.set("status", true);
+                }
+                encodeMatrix(can);
+                can.renderAll();
+            }
         });
 
-        $("#send").on("click", function (e) {
-            e.preventDefault();
-        });
-
-        $("#mtx-encode").on('keyup', function (e) {
-            var target = e.target, position = target.selectionEnd, length = target.value.length;
-            target.value = target.value.replace(/[^\da-f]/g, '').replace(/(.{2})/g, '$1 ').trim();
-            target.selectionEnd = position += ((target.value.charAt(position - 1) === ' ' && target.value.charAt(length - 1) === ' ' && length !== target.value.length) ? 1 : 0);
-        });
-
-        function editTableElement(table, key, value, timestamp) {
-            var ret = false;
-            table.find("tr").each(function (rowIndex, r) {
-                var sameNode = false;
-                $(this).find("td").each(function (colIndex, c) {
-                    if (c.textContent === key) {
-                        sameNode = true;
-                    }
-                    if (sameNode && colIndex == 3) {
-                        c.textContent = value;
-                        ret = true;
-                    }
-                    if (sameNode && colIndex == 0) {
-                        c.textContent = timestamp;
-                    }
+        var elm_h = can.height / 8;
+        var elm_w = can.width / 8;
+        for (i = 0; i < 8; i++) {
+            for (j = 0; j < 8; j++) {
+                var circle = new fabric.Circle({
+                    top: elm_h * i + 5,
+                    left: elm_w * j + 5,
+                    radius: (elm_h / 2) - 5,
+                    fill: '#4c4a4a',
+                    selectable: false,
+                    status: false,
+                    code: (i << 8) | (1 << j),
+                    objectCaching: false
                 });
-                if (ret) {
-                    $(this).addClass("table-success");
+                can.add(circle);
+            }
+        }
+    }
+
+
+    $("#decode").on("click", function (e) {
+        decodeMatrix(canvas);
+        e.preventDefault();
+    });
+
+    $("#reset-on").on("click", function (e) {
+        $("#mtx-encode").val("ff ff ff ff ff ff ff ff");
+        decodeMatrix(canvas);
+        e.preventDefault();
+    });
+
+    $("#reset-off").on("click", function (e) {
+        $("#mtx-encode").val("00 00 00 00 00 00 00 00");
+        decodeMatrix(canvas);
+        e.preventDefault();
+    });
+
+    $('button[name=cmd-button').on('click', function (e) {
+        $("#mtx-encode").val($(this).attr("cmd"));
+        decodeMatrix(canvas);
+        e.preventDefault();
+    });
+
+    $("#send").on("click", function (e) {
+        e.preventDefault();
+    });
+
+    $("#mtx-encode").on('keyup', function (e) {
+        var target = e.target, position = target.selectionEnd, length = target.value.length;
+        target.value = target.value.replace(/[^\da-f]/g, '').replace(/(.{2})/g, '$1 ').trim();
+        target.selectionEnd = position += ((target.value.charAt(position - 1) === ' ' && target.value.charAt(length - 1) === ' ' && length !== target.value.length) ? 1 : 0);
+    });
+
+
+
+
+    function editTableElement(table, key, value, timestamp) {
+        var ret = false;
+        table.find("tr").each(function (rowIndex, r) {
+            var sameNode = false;
+            $(this).find("td").each(function (colIndex, c) {
+                if (c.textContent === key) {
+                    sameNode = true;
+                }
+                if (sameNode && colIndex == 3) {
+                    c.textContent = value;
+                    ret = true;
+                }
+                if (sameNode && colIndex == 0) {
+                    c.textContent = timestamp;
                 }
             });
-            return ret;
-        }
-
-        function cleanTableStatus() {
-            $("#dev_table").find("tr").each(function (rowIndex, r) {
-                $(this).removeClass("table-success");
-            });
-        }
-
-        function appendTableColumn(table, rowData) {
-            var lastRow = $('<tr/>').appendTo(table.find('tbody:last'));
-            $.each(rowData, function (colIndex, c) {
-                lastRow.append($("<t" + (colIndex == 0 ? "h" : "d") + "/>").text(c));
-            });
-
-            return lastRow;
-        }
-
-
-        function devicesStatus() {
-            var ws = new WebSocket("{{.url}}");
-            ws.onopen = function (evt) {
-                $("#dev_status").text("OPEN");
-                $("#dev_status").removeClass("btn-danger");
-                $("#dev_status").addClass("btn-success");
+            if (ret) {
+                $(this).addClass("table-success");
             }
+        });
+        return ret;
+    }
 
-            ws.onclose = function (evt) {
-                $("#dev_status").text("CLOSE");
-                $("#dev_status").removeClass("btn-success");
-                $("#dev_status").addClass("btn-danger");
-                ws = null;
-            }
+    function cleanTableStatus() {
+        $("#dev_table").find("tr").each(function (rowIndex, r) {
+            $(this).removeClass("table-success");
+        });
+    }
 
-            ws.onmessage = function (evt) {
-                var d = JSON.parse(evt.data)
-                var edit = editTableElement($("#dev_table"), d.node, d.data, d.timestamp);
-                if (!edit) {
-                    appendTableColumn($("#dev_table"), [$("#dev_table tr").length, d.timestamp, d.node, "alive", d.data]);
-                }
-            }
-
-            ws.onerror = function (evt) {
-                $("#dev_status").text("ERROR");
-                $("#dev_status").removeClass("btn-success");
-                $("#dev_status").addClass("btn-danger");
-            }
-        }
-
-        $("#recon").on("click", function () {
-            devicesStatus();
+    function appendTableColumn(table, rowData) {
+        var lastRow = $('<tr/>').appendTo(table.find('tbody:last'));
+        $.each(rowData, function (colIndex, c) {
+            lastRow.append($("<t" + (colIndex == 0 ? "h" : "d") + "/>").text(c));
         });
 
+        return lastRow;
+    }
 
-        $("button#click").click(function () {
-            var cur = $(this);
-            $.ajax({
-                type: "POST",
-                url: "event",
-                data: JSON.stringify({ icons: $(this).attr("name"), status: "ok" }),
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (msg) {
-                    $("#status").attr("class", "ok");
-                    $("#status").text("Status: " + cur.attr("name") + "..ok!");
-                },
-                error: function (msg) {
-                    $("#status").text("Error!");
-                }
-            });
-        });
 
+    function devicesStatus() {
+        var ws = new WebSocket("{{.url}}");
+        ws.onopen = function (evt) {
+            $("#dev_status").text("OPEN");
+            $("#dev_status").removeClass("btn-danger");
+            $("#dev_status").addClass("btn-success");
+        }
+
+        ws.onclose = function (evt) {
+            $("#dev_status").text("CLOSE");
+            $("#dev_status").removeClass("btn-success");
+            $("#dev_status").addClass("btn-danger");
+            ws = null;
+        }
+
+        ws.onmessage = function (evt) {
+            var d = JSON.parse(evt.data)
+            var edit = editTableElement($("#dev_table"), d.node, d.data, d.timestamp);
+            if (!edit) {
+                appendTableColumn($("#dev_table"), [$("#dev_table tr").length, d.timestamp, d.node, "alive", d.data]);
+            }
+        }
+
+        ws.onerror = function (evt) {
+            $("#dev_status").text("ERROR");
+            $("#dev_status").removeClass("btn-success");
+            $("#dev_status").addClass("btn-danger");
+        }
+    }
+
+    $("#recon").on("click", function () {
         devicesStatus();
-        matrixUpdate(canvas);
-        setInterval(cleanTableStatus, 5000);
+    });
 
-    </script>
-    {{end}}
+
+    $("button#click").click(function () {
+        var cur = $(this);
+        $.ajax({
+            type: "POST",
+            url: "event",
+            data: JSON.stringify({ icons: $(this).attr("name"), status: "ok" }),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (msg) {
+                $("#status").attr("class", "ok");
+                $("#status").text("Status: " + cur.attr("name") + "..ok!");
+            },
+            error: function (msg) {
+                $("#status").text("Error!");
+            }
+        });
+    });
+
+    devicesStatus();
+    matrixUpdate(canvas);
+    setInterval(cleanTableStatus, 5000);
+
+</script>
+{{end}}
