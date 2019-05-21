@@ -3,9 +3,9 @@
 
 {{define "content"}}
 <div class="components">
-    <table style="border:none">
+    <table>
         <caption>
-            <p>Matrix IoT Led's</p>
+            <p>Matrix IoT Display Led's</p>
         </caption>
         <tbody>
             <tr>
@@ -70,42 +70,37 @@
     </table>
 </div>
 <hr>
-
-
-<!--
-        <div class="col-sm-8">
-            <div class="card border-primary mb-3">
-                <div class="card-header">Devices Status</div>
-                <div class="card-body text-primary">
-                    <div class="row">
-                        <div class="col-sm-4">
-                            <h5 class="card-title">Status</h5>
-                            <button type="button" class="btn btn-danger" id="dev_status">OFFLINE</button>
-                        </div>
-                        <div class="col-sm-4">
-                            <h5 class="card-title">Connection</h5>
-                            <button type="button" class="btn btn-secondary" id=recon>Refresh</button>
-                        </div>
-                    </div>
-                    <p class="card-text">
-                        <table class="table" id=dev_table>
-                            <thead class="thead-light">
-                                <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">Timestamp</th>
-                                    <th scope="col">Node</th>
-                                    <th scope="col">Status</th>
-                                    <th scope="col">Uptime</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
-                    </p>
-                </div>
-            </div>
-        </div>
--->
+<div class="components">
+    <table class="table" id=dev_table>
+        <caption>
+            Device status table
+        </caption>
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Timestamp</th>
+                <th scope="col">Node</th>
+                <th scope="col">Status</th>
+                <th scope="col">Uptime</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th colspan="5">-- device status --</th>
+            </tr>
+        </tfoot>
+        <tbody>
+            <tr>
+                <th>0</th>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<hr>
 {{end}}
 
 {{ define "javascript"}}
@@ -272,6 +267,7 @@
         return lastRow;
     }
 
+    /*
     function devicesStatus() {
         var ws = new WebSocket("{{.url}}");
         ws.onopen = function (evt) {
@@ -305,9 +301,32 @@
     $("#recon").on("click", function () {
         devicesStatus();
     });
-
     devicesStatus();
+    */
+
+    function updateDevTable() {
+        $.ajax({
+            type: "GET",
+            url: "devst",
+            data: "",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (msg) {
+                if (msg) {
+                    jQuery.each(msg, function (i, val) {
+                        var edit = editTableElement($("#dev_table"), val.node, val.data, val.timestamp);
+                        if (!edit) {
+                            appendTableColumn($("#dev_table"), [$("#dev_table tr").length, val.timestamp, val.node, "alive", val.data]);
+                        }
+                    });
+                }
+            },
+            error: function (msg) {
+            }
+        });
+    }
+
     matrixUpdate(canvas);
-    setInterval(cleanTableStatus, 5000);
+    setInterval(updateDevTable, 5000);
 </script>
 {{end}}
