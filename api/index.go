@@ -1,14 +1,11 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 
-	"github.com/apex/log"
 	server "github.com/asterix24/radiolog-mqtt/cloud"
 	"github.com/asterix24/radiolog-mqtt/dbi"
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 )
 
 type Api struct {
@@ -30,7 +27,7 @@ func (api *Api) Publish(c *gin.Context) {
 
 // Index ...
 func (api *Api) Index(c *gin.Context) {
-	c.HTML(http.StatusOK, "index", gin.H{"title": "MQTT Example", "url": "ws://" + c.Request.Host + "/devup", "ncol": 8, "nrow": 8})
+	c.HTML(http.StatusOK, "index", gin.H{"title": "IoT Panel"})
 }
 
 // Test ...
@@ -53,35 +50,23 @@ func (api *Api) Events(c *gin.Context) {
 	})
 }
 
-var upgrader = websocket.Upgrader{} // use default options
+// DevState ...
+type DevState struct {
+	Node      string `json:"node"`
+	Data      string `json:"data"`
+	Count     int    `json:"count"`
+	Timestamp string `json:"timestamp"`
+}
+
+// DevStatus ...
+type DevStatus []DevState
 
 // Devicestatus ...
 func (api *Api) Devicestatus(c *gin.Context) {
-	con, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-	if err != nil {
-		log.Errorf("upgrade:", err)
-		return
+	l := api.Db.StatusNode()
+	var v DevStatus
+	for _, item := range l {
+		v = append(v, DevState{Node: item.Node, Data: item.Data, Count: item.Count, Timestamp: item.Timestamp.Format("2006-01-02 15:04:05")})
 	}
-	defer con.Close()
-	for {
-		select {
-		case d := <-api.Cld.StatusEv:
-			m, err := json.Marshal(d)
-			if err != nil {
-				log.Errorf("Marshall write:", err)
-				break
-			}
-			err = con.WriteMessage(1, m)
-			if err != nil {
-				log.Errorf("WS write:", err)
-				con, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-				if err != nil {
-					log.Errorf("upgrade:", err)
-					return
-				}
-				defer con.Close()
-				continue
-			}
-		}
-	}
+	c.JSON(http.StatusOK, v)
 }
