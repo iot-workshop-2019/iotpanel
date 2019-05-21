@@ -57,9 +57,8 @@
                     </div>
                     <hr>
                     <label for="select">Send command to device:</label>
-                    <select id="select" name="select">
+                    <select id="dev-list" name="select">
                         <option> All </option>
-                        <option> Option 02 </option>
                     </select>
                     <button id="send" class="btn btn-error btn-ghost btn-block">Send</button>
                     <label for="select">Status command:</label>
@@ -78,10 +77,10 @@
         <thead>
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">Timestamp</th>
                 <th scope="col">Node</th>
-                <th scope="col">Status</th>
-                <th scope="col">Uptime</th>
+                <th scope="col">Count</th>
+                <th scope="col">Timestamp</th>
+                <th scope="col">Data</th>
             </tr>
         </thead>
         <tfoot>
@@ -108,6 +107,7 @@
     var s = [0, 0, 0, 0, 0, 0, 0, 0];
     var canvas = new fabric.Canvas('mtx', {
         backgroundColor: 'black',
+        hoverCursor: "grab"
     });
 
     function encodeMatrix(c) {
@@ -179,7 +179,8 @@
                     selectable: false,
                     status: false,
                     code: (i << 8) | (1 << j),
-                    objectCaching: false
+                    objectCaching: false,
+                    hoverCursor: "pointer"
                 });
                 can.add(circle);
             }
@@ -230,7 +231,7 @@
         e.preventDefault();
     });
 
-    function editTableElement(table, key, value, timestamp) {
+    function editTableElement(table, key, count, timestamp, data) {
         var ret = false;
         table.find("tr").each(function (rowIndex, r) {
             var sameNode = false;
@@ -238,16 +239,20 @@
                 if (c.textContent === key) {
                     sameNode = true;
                 }
-                if (sameNode && colIndex == 3) {
-                    c.textContent = value;
+                if (sameNode && colIndex == 1) {
+                    c.textContent = count;
                     ret = true;
                 }
-                if (sameNode && colIndex == 0) {
+                if (sameNode && colIndex == 2) {
                     c.textContent = timestamp;
+                }
+
+                if (sameNode && colIndex == 3) {
+                    c.textContent = data;
                 }
             });
             if (ret) {
-                $(this).addClass("table-success");
+                $(this).addClass("terminal-alert terminal-alert-primary");
             }
         });
         return ret;
@@ -263,46 +268,10 @@
         var lastRow = $('<tr/>').appendTo(table.find('tbody:last'));
         $.each(rowData, function (colIndex, c) {
             lastRow.append($("<t" + (colIndex == 0 ? "h" : "d") + "/>").text(c));
+            lastRow.removeClass("terminal-alert terminal-alert-primary")
         });
         return lastRow;
     }
-
-    /*
-    function devicesStatus() {
-        var ws = new WebSocket("{{.url}}");
-        ws.onopen = function (evt) {
-            $("#dev_status").text("OPEN");
-            $("#dev_status").removeClass("btn-danger");
-            $("#dev_status").addClass("btn-success");
-        }
-
-        ws.onclose = function (evt) {
-            $("#dev_status").text("CLOSE");
-            $("#dev_status").removeClass("btn-success");
-            $("#dev_status").addClass("btn-danger");
-            ws = null;
-        }
-
-        ws.onmessage = function (evt) {
-            var d = JSON.parse(evt.data)
-            var edit = editTableElement($("#dev_table"), d.node, d.data, d.timestamp);
-            if (!edit) {
-                appendTableColumn($("#dev_table"), [$("#dev_table tr").length, d.timestamp, d.node, "alive", d.data]);
-            }
-        }
-
-        ws.onerror = function (evt) {
-            $("#dev_status").text("ERROR");
-            $("#dev_status").removeClass("btn-success");
-            $("#dev_status").addClass("btn-danger");
-        }
-    }
-
-    $("#recon").on("click", function () {
-        devicesStatus();
-    });
-    devicesStatus();
-    */
 
     function updateDevTable() {
         $.ajax({
@@ -313,10 +282,26 @@
             dataType: "json",
             success: function (msg) {
                 if (msg) {
+                    console.log(msg);
                     jQuery.each(msg, function (i, val) {
-                        var edit = editTableElement($("#dev_table"), val.node, val.data, val.timestamp);
+                        var edit = editTableElement($("#dev_table"), val.node, val.count, val.timestamp, val.data);
                         if (!edit) {
-                            appendTableColumn($("#dev_table"), [$("#dev_table tr").length, val.timestamp, val.node, "alive", val.data]);
+                            appendTableColumn($("#dev_table"), [$("#dev_table tr").length - 2, val.node, val.count, val.timestamp, val.data]);
+                        }
+
+                        var new_node = true;
+                        $('#dev-list > option').each(function () {
+                            if ($(this).val() === val.node) {
+                                new_node = false;
+                                return;
+                            }
+                        })
+                        if (new_node) {
+                            $('#dev-list').append($('<option>', {
+                                value: val.node,
+                                text: 'Device: ' + val.node
+                            }));
+
                         }
                     });
                 }
