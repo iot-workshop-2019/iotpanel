@@ -70,34 +70,10 @@
 </div>
 <hr>
 <div class="components">
-    <table class="table" id=dev_table>
-        <caption>
-            Device status table
-        </caption>
-        <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Node</th>
-                <th scope="col">Count</th>
-                <th scope="col">Timestamp</th>
-                <th scope="col">Data</th>
-            </tr>
-        </thead>
-        <tfoot>
-            <tr>
-                <th colspan="5">-- device status --</th>
-            </tr>
-        </tfoot>
-        <tbody>
-            <tr>
-                <th>0</th>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="form-group">
+        <legend>Console log</legend>
+        <textarea id="console-log" cols=30 rows=10></textarea>
+    </div>
 </div>
 <hr>
 {{end}}
@@ -282,13 +258,12 @@
             dataType: "json",
             success: function (msg) {
                 if (msg) {
-                    console.log(msg);
                     jQuery.each(msg, function (i, val) {
-                        var edit = editTableElement($("#dev_table"), val.node, val.count, val.timestamp, val.data);
-                        if (!edit) {
-                            appendTableColumn($("#dev_table"), [$("#dev_table tr").length - 2, val.node, val.count, val.timestamp, val.data]);
-                        }
-
+                        var selectionStart = $('#console-log')[0].selectionStart;
+                        var selectionEnd = $('#console-log')[0].selectionEnd;
+                        $('#console-log').val("[" + val.timestamp + "];" + val.node + ";" + val.count + ";" + val.data + "\n" + $('#console-log').val());
+                        $('#console-log')[0].selectionStart = selectionStart;
+                        $('#console-log')[0].selectionEnd = selectionEnd;
                         var new_node = true;
                         $('#dev-list > option').each(function () {
                             if ($(this).val() === val.node) {
@@ -301,7 +276,6 @@
                                 value: val.node,
                                 text: 'Device: ' + val.node
                             }));
-
                         }
                     });
                 }
@@ -312,6 +286,6 @@
     }
 
     matrixUpdate(canvas);
-    setInterval(updateDevTable, 5000);
+    setInterval(updateDevTable, 10000);
 </script>
 {{end}}

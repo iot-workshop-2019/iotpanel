@@ -107,7 +107,7 @@ func (dbp *DBI) UpdateNode(node string, data string) {
 func (dbp *DBI) StatusNode() []RadiologDevice {
 	var nl []RadiologDevice
 	now := time.Now()
-	before := now.Add(-time.Duration(10) * time.Minute)
+	before := now.Add(-time.Duration(10) * time.Second)
 	dbp.db.Where("timestamp BETWEEN ? AND ?", before, now).Find(&nl)
 
 	return nl
