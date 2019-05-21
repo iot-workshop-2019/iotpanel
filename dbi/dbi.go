@@ -72,6 +72,15 @@ type Radiologdata struct {
 	Temppressure int
 }
 
+// RadiologDevice Status in table
+type RadiologDevice struct {
+	gorm.Model
+	Node      string `gorm:"type:varchar(100);unique_index"`
+	Data      string
+	Count     int
+	Timestamp time.Time
+}
+
 // Temperature of gived address
 func (dbp *DBI) Temperature(address uint) {
 	var d []Radiologdata
@@ -80,6 +89,28 @@ func (dbp *DBI) Temperature(address uint) {
 	for i := 0; i < 10; i++ {
 		fmt.Println(d[i].Ntc0)
 	}
+}
+
+// UpdateNode ...
+func (dbp *DBI) UpdateNode(node string, data string) {
+	var n RadiologDevice
+	if err := dbp.db.Where("node = ?", node).First(&n).Error; gorm.IsRecordNotFoundError(err) {
+		dbp.db.Create(&RadiologDevice{Node: node, Data: "", Count: 1, Timestamp: time.Now()})
+		log.Info("New node found ", node)
+	} else {
+		dbp.db.Model(&n).Select("count", "timestamp").Updates(map[string]interface{}{"count": n.Count + 1, "timestamp": time.Now()})
+		log.Info("Update Node: ", node)
+	}
+}
+
+// StatusNode ...
+func (dbp *DBI) StatusNode() []RadiologDevice {
+	var nl []RadiologDevice
+	now := time.Now()
+	before := now.Add(-time.Duration(10) * time.Minute)
+	dbp.db.Where("timestamp BETWEEN ? AND ?", before, now).Find(&nl)
+
+	return nl
 }
 
 // Init init db module interface
@@ -97,9 +128,11 @@ func (dbp *DBI) Init() error {
 		return err
 	}
 	//defer dbp.db.Close()
+	dbp.db.LogMode(false)
 	log.Info("Successfully connected!")
 
 	// Migrate the schema
 	dbp.db.AutoMigrate(&Radiologdata{})
+	dbp.db.AutoMigrate(&RadiologDevice{})
 	return nil
 }
