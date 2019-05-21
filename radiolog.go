@@ -88,7 +88,7 @@ func main() {
 	r.GET("/pub/:data", api.Publish)
 	r.GET("/status", api.Status)
 	r.POST("/event", api.Events)
-	r.GET("/devup", api.Devicestatus)
+	r.GET("/devst", api.Devicestatus)
 
 	r.Run(":8080")
 }
