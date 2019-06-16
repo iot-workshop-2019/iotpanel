@@ -75,9 +75,10 @@ type Radiologdata struct {
 // RadiologDevice Status in table
 type RadiologDevice struct {
 	gorm.Model
-	Node      string `gorm:"type:varchar(100);unique_index"`
+	Node      string
 	Data      string
 	Count     int
+	Kind      string
 	Timestamp time.Time
 }
 
@@ -92,15 +93,9 @@ func (dbp *DBI) Temperature(address uint) {
 }
 
 // UpdateNode ...
-func (dbp *DBI) UpdateNode(node string, data string) {
-	var n RadiologDevice
-	if err := dbp.db.Where("node = ?", node).First(&n).Error; gorm.IsRecordNotFoundError(err) {
-		dbp.db.Create(&RadiologDevice{Node: node, Data: "", Count: 1, Timestamp: time.Now()})
-		log.Info("New node found ", node)
-	} else {
-		dbp.db.Model(&n).Select("count", "timestamp").Updates(map[string]interface{}{"count": n.Count + 1, "timestamp": time.Now()})
-		log.Info("Update Node: ", node)
-	}
+func (dbp *DBI) UpdateNode(node string, kind string, data string) {
+	dbp.db.Create(&RadiologDevice{Node: node, Data: data, Count: 1, Kind: kind, Timestamp: time.Now()})
+	log.Info("New node found ", node)
 }
 
 // StatusNode ...

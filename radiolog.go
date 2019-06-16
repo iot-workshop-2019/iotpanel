@@ -5,11 +5,11 @@ import (
 	"os"
 	"time"
 
-	handlers "github.com/asterix24/radiolog-mqtt/api"
-	"github.com/asterix24/radiolog-mqtt/evcal"
+	handlers "github.com/asterix24/iotpanel/api"
 
-	server "github.com/asterix24/radiolog-mqtt/cloud"
-	"github.com/asterix24/radiolog-mqtt/dbi"
+	server "github.com/asterix24/iotpanel/cloud"
+	"github.com/asterix24/iotpanel/dbi"
+
 	gintemplate "github.com/foolin/gin-template"
 
 	"github.com/gin-gonic/gin"
@@ -50,12 +50,6 @@ func main() {
 	cloudSrv := &server.Server{Db: dbp}
 	cloudSrv.Init()
 
-	evcal := &evcal.EvCal{}
-	evcal.Init()
-	evcal.Events()
-
-	// schedule(cloudSrv.Publish, 20*time.Second)
-
 	r := gin.Default()
 	r.HTMLRender = gintemplate.New(gintemplate.TemplateConfig{
 		Root:      "api/views",
@@ -78,11 +72,6 @@ func main() {
 	r.Static("/test", "./api/views/")
 
 	api := &handlers.Api{Db: dbp, Cld: cloudSrv}
-	// schedule(func(p chan string) {
-	// 	fmt.Println("# alive")
-	// 	t := time.Now()
-	// 	p <- fmt.Sprintf("[%s]: alive", t.String())
-	// }, 10*time.Second, api.Data)
 
 	r.GET("/", api.Index)
 	r.GET("/pub/:data", api.Publish)

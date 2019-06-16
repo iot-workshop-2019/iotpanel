@@ -3,8 +3,8 @@ package handlers
 import (
 	"net/http"
 
-	server "github.com/asterix24/radiolog-mqtt/cloud"
-	"github.com/asterix24/radiolog-mqtt/dbi"
+	server "github.com/asterix24/iotpanel/cloud"
+	"github.com/asterix24/iotpanel/dbi"
 	"github.com/gin-gonic/gin"
 )
 
