@@ -50,6 +50,14 @@ func main() {
 	cloudSrv := &server.Server{Db: dbp}
 	cloudSrv.Init()
 
+	staticFileRoot, ok := os.LookupEnv("STATIC_FILE_ROOT")
+	if !ok {
+		log.Error("STATIC_FILE_ROOT environment variable required but not set")
+		staticFileRoot = "./"
+		log.Errorf("Switch on default %v", staticFileRoot)
+
+	}
+
 	r := gin.Default()
 	r.HTMLRender = gintemplate.New(gintemplate.TemplateConfig{
 		Root:      "api/views",
@@ -67,9 +75,9 @@ func main() {
 		DisableCache: true,
 	})
 
-	r.Static("/images", "./api/views/images")
-	r.Static("/static", "./api/views/static")
-	r.Static("/test", "./api/views/")
+	r.Static("/images", staticFileRoot+"api/views/images")
+	r.Static("/static", staticFileRoot+"api/views/static")
+	r.Static("/test", staticFileRoot+"api/views/")
 
 	api := &handlers.Api{Db: dbp, Cld: cloudSrv}
 
