@@ -48,7 +48,7 @@ func (server *Server) Publish(key string, value string) error {
 func (server *Server) Init() error {
 	mqtt.ERROR = log.New()
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker("tcp://mqtt.asterix.cloud:1883").SetClientID("carmine")
+	opts.AddBroker("tcp://mqtt.asterix.cloud:1883").SetClientID("radiologhub")
 	opts.SetKeepAlive(time.Second * time.Duration(60))
 	opts.SetConnectionLostHandler(func(client mqtt.Client, e error) {
 		log.Warn(fmt.Sprintf("Connection lost : %v", e))

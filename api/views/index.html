@@ -261,7 +261,7 @@
                     jQuery.each(msg, function (i, val) {
                         var selectionStart = $('#console-log')[0].selectionStart;
                         var selectionEnd = $('#console-log')[0].selectionEnd;
-                        $('#console-log').val("[" + val.timestamp + "];" + val.node + ";" + val.kind + ";" + val.count + ";" + val.data + "\n" + $('#console-log').val());
+                        $('#console-log').val("[" + val.timestamp + "];" + val.node + ";" + val.count + ";" + val.kind + ";" + val.data + "\n" + $('#console-log').val());
                         $('#console-log')[0].selectionStart = selectionStart;
                         $('#console-log')[0].selectionEnd = selectionEnd;
                         var new_node = true;
