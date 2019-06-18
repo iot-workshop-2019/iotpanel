@@ -3,9 +3,9 @@ package handlers
 import (
 	"net/http"
 
-	server "github.com/asterix24/iotpanel/cloud"
-	"github.com/asterix24/iotpanel/dbi"
 	"github.com/gin-gonic/gin"
+	server "github.com/iot-workshop-2019/iotpanel/cloud"
+	"github.com/iot-workshop-2019/iotpanel/dbi"
 )
 
 type Api struct {
@@ -54,6 +54,7 @@ func (api *Api) Events(c *gin.Context) {
 type DevState struct {
 	Node      string `json:"node"`
 	Data      string `json:"data"`
+	Kind      string `json:"kind"`
 	Count     int    `json:"count"`
 	Timestamp string `json:"timestamp"`
 }
@@ -66,7 +67,7 @@ func (api *Api) Devicestatus(c *gin.Context) {
 	l := api.Db.StatusNode()
 	var v DevStatus
 	for _, item := range l {
-		v = append(v, DevState{Node: item.Node, Data: item.Data, Count: item.Count, Timestamp: item.Timestamp.Format("2006-01-02 15:04:05")})
+		v = append(v, DevState{Node: item.Node, Data: item.Data, Kind: item.Kind, Count: item.Count, Timestamp: item.Timestamp.Format("2006-01-02 15:04:05")})
 	}
 	c.JSON(http.StatusOK, v)
 }

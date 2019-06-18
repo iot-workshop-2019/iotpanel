@@ -5,10 +5,10 @@ import (
 	"os"
 	"time"
 
-	handlers "github.com/asterix24/iotpanel/api"
+	handlers "github.com/iot-workshop-2019/iotpanel/api"
 
-	server "github.com/asterix24/iotpanel/cloud"
-	"github.com/asterix24/iotpanel/dbi"
+	server "github.com/iot-workshop-2019/iotpanel/cloud"
+	"github.com/iot-workshop-2019/iotpanel/dbi"
 
 	gintemplate "github.com/foolin/gin-template"
 

@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/asterix24/iotpanel/dbi"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/iot-workshop-2019/iotpanel/dbi"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -48,7 +48,7 @@ func (server *Server) Publish(key string, value string) error {
 func (server *Server) Init() error {
 	mqtt.ERROR = log.New()
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker("tcp://mqtt.asterix.cloud:1883").SetClientID("radiologHub")
+	opts.AddBroker("tcp://mqtt.asterix.cloud:1883").SetClientID("carmine")
 	opts.SetKeepAlive(time.Second * time.Duration(60))
 	opts.SetConnectionLostHandler(func(client mqtt.Client, e error) {
 		log.Warn(fmt.Sprintf("Connection lost : %v", e))
