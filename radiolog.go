@@ -60,7 +60,7 @@ func main() {
 
 	r := gin.Default()
 	r.HTMLRender = gintemplate.New(gintemplate.TemplateConfig{
-		Root:      "api/views",
+		Root:      staticFileRoot + "api/views",
 		Extension: ".html",
 		Master:    "layouts/master",
 		Funcs: template.FuncMap{
@@ -75,6 +75,7 @@ func main() {
 		DisableCache: true,
 	})
 
+	log.Info(staticFileRoot + "api/views/images")
 	r.Static("/images", staticFileRoot+"api/views/images")
 	r.Static("/static", staticFileRoot+"api/views/static")
 	r.Static("/test", staticFileRoot+"api/views/")
