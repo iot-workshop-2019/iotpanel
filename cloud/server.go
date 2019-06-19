@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"time"
 
@@ -48,7 +49,13 @@ func (server *Server) Publish(key string, value string) error {
 func (server *Server) Init() error {
 	mqtt.ERROR = log.New()
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker("tcp://mqtt.asterix.cloud:1883").SetClientID("radiologhub")
+	nmclientid, ok := os.LookupEnv("NMCLIENTID")
+	if !ok {
+		log.Error("NMCLIENTID environment variable required but not set")
+		log.Info("Using default variable radiologhub")
+		nmclientid = "radiologhub"
+	}
+	opts.AddBroker("tcp://mqtt.asterix.cloud:1883").SetClientID(nmclientid)
 	opts.SetKeepAlive(time.Second * time.Duration(60))
 	opts.SetConnectionLostHandler(func(client mqtt.Client, e error) {
 		log.Warn(fmt.Sprintf("Connection lost : %v", e))
