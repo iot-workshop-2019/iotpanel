@@ -183,12 +183,14 @@
     $("#send").click(function (e) {
         var cur = $(this);
         var data = $("#mtx-encode").val();
+        var dev = $("#dev-list").val();
         data = data.replace(/ /g, '');
         console.log(data);
+        console.log(dev)
         $.ajax({
             type: "POST",
             url: "event",
-            data: JSON.stringify({ icons: data, status: "ok" }),
+            data: JSON.stringify({ icons: data, status: "ok", device: dev }),
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: function (msg) {

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -17,6 +18,7 @@ type Api struct {
 type ButtonJSON struct {
 	Icons  string `json:"icons"`
 	Status string `json:"status"`
+	Device string `json:"device"`
 }
 
 // Publish ...
@@ -44,10 +46,21 @@ func (api *Api) Status(c *gin.Context) {
 func (api *Api) Events(c *gin.Context) {
 	var button ButtonJSON
 	c.Bind(&button)
-	api.Cld.Publish("show", button.Icons)
-	c.JSON(http.StatusOK, gin.H{
-		"status": "ok",
-	})
+	if button.Device == "All" {
+		api.Cld.Publish("show", button.Icons)
+		c.JSON(http.StatusOK, gin.H{
+			"status": "ok",
+		})
+	} else {
+		var buffer bytes.Buffer
+		buffer.WriteString(button.Device)
+		buffer.WriteString("/show")
+		api.Cld.Publish(buffer.String(), button.Icons)
+		c.JSON(http.StatusOK, gin.H{
+			"status": "ok",
+		})
+	}
+
 }
 
 // DevState ...
